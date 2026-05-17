@@ -12,9 +12,12 @@ function isBulletList(text) {
 
 function isPoetry(text) {
   const lines = text.split('\n').filter(l => l.trim())
-  if (lines.length < 3) return false
+  if (lines.length < 4) return false
   const avgLineLen = lines.reduce((sum, l) => sum + l.trim().length, 0) / lines.length
-  return avgLineLen < 40 && lines.every(l => l.trim().length > 0)
+  if (avgLineLen >= 30) return false
+  const allCapitalized = lines.every(l => /^[A-Z]/.test(l.trim()))
+  const noPunctuationEnd = lines.slice(0, -1).every(l => !/[.?!:]$/.test(l.trim()))
+  return allCapitalized && noPunctuationEnd
 }
 
 function hasCitationMarker(text) {
