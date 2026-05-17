@@ -10,18 +10,24 @@ chrome.storage.onChanged.addListener((changes) => {
   }
 })
 
+function getSelectedText() {
+  const active = document.activeElement
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+    return active.value.substring(active.selectionStart, active.selectionEnd)
+  }
+  const sel = window.getSelection()
+  return sel ? sel.toString() : ''
+}
+
 document.addEventListener('copy', (e) => {
   if (!enabled) return
 
-  const selection = window.getSelection()
-  const text = selection ? selection.toString() : ''
-
+  const text = getSelectedText()
   if (!text) return
 
   const cleaned = cleanText(text)
+  if (cleaned === text) return
 
-  if (cleaned !== text) {
-    e.preventDefault()
-    e.clipboardData.setData('text/plain', cleaned)
-  }
+  e.preventDefault()
+  e.clipboardData.setData('text/plain', cleaned)
 })
