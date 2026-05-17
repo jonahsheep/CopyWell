@@ -20,7 +20,29 @@ function cleanText(text) {
   }
 
   if (!structure.isCode && !structure.isBulletList && !structure.isPoetry) {
-    result = result.replace(/(?<=\S)\n(?=[a-z])/g, ' ')
+    const lines = result.split('\n')
+    const merged = []
+    let buffer = ''
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      if (!line.trim()) {
+        if (buffer) { merged.push(buffer); buffer = '' }
+        merged.push(line)
+        continue
+      }
+      if (!buffer) {
+        buffer = line
+        continue
+      }
+      if (/[.!?:]$/.test(buffer.trim()) || /^[A-Z]/.test(line.trimStart())) {
+        merged.push(buffer)
+        buffer = line
+      } else {
+        buffer += ' ' + line.trimStart()
+      }
+    }
+    if (buffer) merged.push(buffer)
+    result = merged.join('\n')
   }
 
   result = result.replace(/^ +/gm, '')
