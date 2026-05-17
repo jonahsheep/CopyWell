@@ -24,12 +24,5 @@
   },
   "background": {
     "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["utils/detectors.js", "utils/unicode.js", "utils/cleaner.js", "content.js"],
-      "run_at": "document_end"
-    }
-  ]
+  }
 }
