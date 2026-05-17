@@ -1,4 +1,4 @@
-# CopyClean
+# CopyWell
 
 Clean copied text instantly. A lightweight Chrome extension that removes broken line breaks, extra spaces, citation clutter, invisible characters, and weird quotes — while preserving code, bullets, and paragraph structure.
 
