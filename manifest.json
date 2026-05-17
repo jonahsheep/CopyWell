@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "CopyClean",
+  "version": "1.0.0",
+  "description": "Clean copied text instantly — removes broken line breaks, extra spaces, citation clutter, and invisible characters.",
+  "permissions": [
+    "storage",
+    "clipboardRead",
+    "clipboardWrite"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "CopyClean",
+    "default_icon": {
+      "16": "icons/icon16.svg",
+      "48": "icons/icon48.svg",
+      "128": "icons/icon128.svg"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.svg",
+    "48": "icons/icon48.svg",
+    "128": "icons/icon128.svg"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["utils/detectors.js", "utils/unicode.js", "utils/cleaner.js", "content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}
