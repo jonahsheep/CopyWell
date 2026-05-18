@@ -1,13 +1,15 @@
 function isCodeBlock(text) {
-  const codeKeywords = /\b(function|const|let|var|class|import|export|def|if|else|for|while|return|import|from|require|module|console|log|print)\b/i
+  const codeKeywords = /\b(function|const|let|var|class|import|export|def|if|else|for|while|return|import|from|require|module|console|log|print|async|await|try|catch|switch|case|throw|new|this|super|extends|implements|interface|type|enum|namespace|using|public|private|protected|static|readonly|void|null|undefined|true|false)\b/i
   const hasBraces = /[{}]/
   const hasSemicolons = /;/
   const hasIndents = /^(?: {4,}|\t+)/m
-  return (codeKeywords.test(text) && hasBraces.test(text) && hasSemicolons.test(text)) || hasIndents.test(text)
+  const hasArrowFunc = /=>/
+  const hasComments = /\/\/|\/\*|\*\/|#/
+  return (codeKeywords.test(text) && hasBraces.test(text) && hasSemicolons.test(text)) || hasIndents.test(text) || (hasArrowFunc.test(text) && hasBraces.test(text)) || (hasComments.test(text) && hasIndents.test(text))
 }
 
 function isBulletList(text) {
-  return /^(?:[-*+]\s|\d+[.)]\s)/m.test(text)
+  return /^(?:[-*+•◦▸▹]\s|\d+[.)]\s|[a-zA-Z][.)]\s)/m.test(text)
 }
 
 function isPoetry(text) {

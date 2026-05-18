@@ -34,7 +34,10 @@ function cleanText(text) {
         buffer = line
         continue
       }
-      if (/[.!?:]$/.test(buffer.trim()) || /^[A-Z]/.test(line.trimStart())) {
+      const currentEndsSentence = /[.!?:]$/.test(line.trim())
+      const prevEndsSentence = /[.!?:]$/.test(buffer.trim())
+      const nextStartsSentence = i + 1 < lines.length && /^[A-Z]/.test(lines[i + 1].trimStart())
+      if (prevEndsSentence || currentEndsSentence || nextStartsSentence) {
         merged.push(buffer)
         buffer = line
       } else {

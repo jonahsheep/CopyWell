@@ -29,7 +29,19 @@ document.addEventListener('copy', (e) => {
   if (cleaned === text) return
 
   e.preventDefault()
-  e.clipboardData.setData('text/plain', cleaned)
+
+  if (e.clipboardData) {
+    e.clipboardData.setData('text/plain', cleaned)
+  } else {
+    const textarea = document.createElement('textarea')
+    textarea.value = cleaned
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+  }
 })
 
 document.addEventListener('paste', (e) => {
@@ -58,11 +70,24 @@ document.addEventListener('paste', (e) => {
   if (selection.rangeCount) {
     const range = selection.getRangeAt(0)
     range.deleteContents()
-    const node = document.createTextNode(cleaned)
-    range.insertNode(node)
-    range.setStartAfter(node)
-    range.setEndAfter(node)
-    selection.removeAllRanges()
-    selection.addRange(range)
+
+    const lines = cleaned.split('\n')
+    if (lines.length === 1) {
+      range.insertNode(document.createTextNode(cleaned))
+    } else {
+      const container = document.createElement('div')
+      container.style.whiteSpace = 'pre-wrap'
+      lines.forEach((line, i) => {
+        container.appendChild(document.createTextNode(line))
+        if (i < lines.length - 1) {
+          container.appendChild(document.createElement('br'))
+        }
+      })
+      range.insertNode(container)
+      range.setStartAfter(container)
+      range.setEndAfter(container)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
   }
 })
