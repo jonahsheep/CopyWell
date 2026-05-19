@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "CopyClean",
+  "name": "CopyWell",
   "version": "1.0.0",
   "description": "Clean copied text instantly — removes broken line breaks, extra spaces, citation clutter, and invisible characters.",
   "permissions": [
@@ -10,7 +10,7 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "CopyClean",
+    "default_title": "CopyWell",
     "default_icon": {
       "16": "icons/icon16.svg",
       "48": "icons/icon48.svg",
@@ -33,11 +33,11 @@
     }
   ],
   "commands": {
-    "toggle-copyclean": {
+    "toggle-copywell": {
       "suggested_key": {
         "default": "Alt+Shift+C"
       },
-      "description": "Toggle CopyClean on/off"
+      "description": "Toggle CopyWell on/off"
     }
   }
 }

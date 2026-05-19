@@ -31,14 +31,14 @@ No extra steps, no buttons to press.
 
 ## Privacy
 
-CopyClean does **not** upload, store, or transmit clipboard contents anywhere. Everything runs locally in your browser. No accounts, no tracking, no backend.
+CopyWell does **not** upload, store, or transmit clipboard contents anywhere. Everything runs locally in your browser. No accounts, no tracking, no backend.
 
 ## Install
 
 1. Open `chrome://extensions`
 2. Enable **Developer mode**
 3. Click **Load unpacked**
-4. Select the `copyclean` folder
+4. Select the `CopyWell` folder
 
 ## File structure
 

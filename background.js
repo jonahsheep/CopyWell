@@ -158,7 +158,7 @@ chrome.runtime.onInstalled.addListener(() => {
 })
 
 chrome.commands.onCommand.addListener((command) => {
-  if (command === 'toggle-copyclean') {
+  if (command === 'toggle-copywell') {
     chrome.storage.local.get('enabled', (data) => {
       const newState = data.enabled !== false ? false : true
       chrome.storage.local.set({ enabled: newState })
