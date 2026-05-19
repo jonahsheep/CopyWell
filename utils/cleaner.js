@@ -1,55 +1,146 @@
+function normalizeQuotes(text) {
+  return text.replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"').replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g, "'")
+}
+
+function normalizeDashes(text) {
+  return text.replace(/\u2013|\u2014/g, '-').replace(/\u2015/g, '--')
+}
+
+function removeInvisibleChars(text) {
+  return text.replace(/[\u200B-\u200D\uFEFF\u00AD\u2060\u2061\u2062\u2063\u2064]/g, '')
+}
+
+function normalizeUnicode(text) {
+  text = normalizeQuotes(text)
+  text = normalizeDashes(text)
+  text = removeInvisibleChars(text)
+  return text.normalize('NFC')
+}
+
+function isCodeBlock(text) {
+  const codeKeywords = /\b(function|const|let|var|class|import|export|def|if|else|for|while|return|import|from|require|module|console|log|print|async|await|try|catch|switch|case|throw|new|this|super|extends|implements|interface|type|enum|namespace|using|public|private|protected|static|readonly|void|null|undefined|true|false)\b/i
+  const hasBraces = /[{}]/
+  const hasSemicolons = /;/
+  const hasIndents = /^(?: {4,}|\t+)/m
+  const hasArrowFunc = /=>/;
+  const hasComments = /\/\/|\/\*|\*\/|#/
+  return (codeKeywords.test(text) && hasBraces.test(text) && hasSemicolons.test(text)) || hasIndents.test(text) || (hasArrowFunc.test(text) && hasBraces.test(text)) || (hasComments.test(text) && hasIndents.test(text))
+}
+
+function isBulletList(text) {
+  return /^(?:[-*+•◦▸▹]\s|\d+[.)]\s|[a-zA-Z][.)]\s)/m.test(text)
+}
+
+function isPoetry(text) {
+  const lines = text.split('\n').filter(l => l.trim())
+  if (lines.length < 4) return false
+  const avgLineLen = lines.reduce((sum, l) => sum + l.trim().length, 0) / lines.length
+  if (avgLineLen >= 30) return false
+  const allCapitalized = lines.every(l => /^[A-Z]/.test(l.trim()))
+  const noPunctuationEnd = lines.slice(0, -1).every(l => !/[.?!:]$/.test(l.trim()))
+  return allCapitalized && noPunctuationEnd
+}
+
+function hasCitationMarker(text) {
+  return /\[\d+(?:[,\s-]+\d+)*\]|\(\d{4}\)|\[\d{4}\]/.test(text)
+}
+
+function looksLikeCodeStart(line, nextLine) {
+  if (isCodeBlock(line)) return true
+  if (/^\s{4,}/.test(line)) return true
+  if (/^\s*\{/.test(line)) return true
+
+  const isFunctionDecl = /^\s*(function|class|const|let|var|async|import|export)\s+\w+/.test(line)
+  const hasOpenBrace = /\{/.test(line)
+  const nextLineIndented = nextLine && /^\s{4,}/.test(nextLine)
+
+  return isFunctionDecl && (hasOpenBrace || nextLineIndented)
+}
+
 function cleanText(text) {
   if (!text) return text
 
-  const structure = detectStructure(text)
-  let result = text
-
-  result = normalizeUnicode(result)
-
-  if (structure.hasCitations) {
-    result = result.replace(/\[\d+(?:[,\s-]+\d+)*\]/g, '')
-    result = result.replace(/\(\d{4}\)/g, '')
-    result = result.replace(/\[\d{4}\]/g, '')
-  }
-
+  let result = normalizeUnicode(text)
   result = result.replace(/\r\n/g, '\n')
 
-  if (!structure.isCode) {
-    result = result.replace(/[ \t]+/g, ' ')
-    result = result.replace(/\n{3,}/g, '\n\n')
-  }
+  const lines = result.split('\n')
+  const processed = []
+  let i = 0
 
-  if (!structure.isCode && !structure.isBulletList && !structure.isPoetry) {
-    const lines = result.split('\n')
-    const merged = []
-    let buffer = ''
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
-      if (!line.trim()) {
-        if (buffer) { merged.push(buffer); buffer = '' }
-        merged.push(line)
-        continue
-      }
-      if (!buffer) {
-        buffer = line
-        continue
-      }
-      const currentEndsSentence = /[.!?:]$/.test(line.trim())
-      const prevEndsSentence = /[.!?:]$/.test(buffer.trim())
-      const nextStartsSentence = i + 1 < lines.length && /^[A-Z]/.test(lines[i + 1].trimStart())
-      if (prevEndsSentence || currentEndsSentence || nextStartsSentence) {
-        merged.push(buffer)
-        buffer = line
-      } else {
-        buffer += ' ' + line.trimStart()
-      }
+  while (i < lines.length) {
+    const line = lines[i]
+    const nextLine = lines[i + 1] || ''
+
+    if (!line.trim()) {
+      processed.push(line)
+      i++
+      continue
     }
-    if (buffer) merged.push(buffer)
-    result = merged.join('\n')
+
+    if (looksLikeCodeStart(line, nextLine)) {
+      const codeLines = []
+      while (i < lines.length && lines[i].trim()) {
+        codeLines.push(lines[i])
+        i++
+      }
+      processed.push(codeLines.join('\n'))
+      continue
+    }
+
+    if (isBulletList(line)) {
+      processed.push(line)
+      i++
+      while (i < lines.length && isBulletList(lines[i])) {
+        processed.push(lines[i])
+        i++
+      }
+      continue
+    }
+
+    if (isPoetry(line)) {
+      const poetryLines = []
+      while (i < lines.length && lines[i].trim()) {
+        poetryLines.push(lines[i])
+        i++
+      }
+      processed.push(poetryLines.join('\n'))
+      continue
+    }
+
+    let buffer = line
+
+    while (i + 1 < lines.length) {
+      const nl = lines[i + 1]
+      if (!nl.trim()) break
+
+      if (looksLikeCodeStart(nl, lines[i + 2] || '')) break
+      if (isBulletList(nl)) break
+      if (isPoetry(nl)) break
+
+      const curEnd = /[.!?:]$/.test(buffer.trim())
+      const nextStart = /^[A-Z]/.test(nl.trimStart())
+      const nextEnd = /[.!?:]$/.test(nl.trim())
+
+      if (curEnd || nextStart || nextEnd) break
+
+      buffer += ' ' + nl.trimStart()
+      i++
+    }
+
+    processed.push(buffer)
+    i++
   }
 
-  result = result.replace(/^ +/gm, '')
+  result = processed.join('\n')
 
+  if (hasCitationMarker(text)) {
+    result = result.replace(/\[\d+(?:[,\s-]+\d+)*\]/g, ' ')
+    result = result.replace(/\(\d{4}\)/g, ' ')
+    result = result.replace(/\[\d{4}\]/g, ' ')
+  }
+
+  result = result.replace(/(?<=\S)  +/g, ' ')
+  result = result.replace(/\n{3,}/g, '\n\n')
   result = result.trim()
 
   return result
